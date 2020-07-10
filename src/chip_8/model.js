@@ -136,58 +136,103 @@ export default class C8 {
     }
 
     Op_2(ins) {
-
+        this.sp += 2;
+        this.ram[this.sp] = (this.pc & 0xffff) >> 8;
+        this.ram[this.sp + 1] = this.pc & 0xff;
+        this.pc = ins & 0xfff;
     }
 
     Op_3(ins) {
-
+        if (this.v[(ins >> 8) & 0xf] == (ins & 0xff)) {
+            this.pc += 2;
+        }
     }
 
     Op_4(ins) {
-
+        if (this.v[(ins >> 8) & 0xf] != (ins & 0xff)) {
+            this.pc += 2;
+        }
     }
 
     Op_5(ins) {
-
+        let y = (0xff & ins) >> 4;
+        let x = (0xfff & ins) >> 8;
+        if (this.v[x] == this.v[y]) {
+            this.pc += 2;
+        }
     }
 
     Op_6(ins) {
-
+        let kk = ins & 0xff;
+        let x = (ins & 0xfff) >> 8;
+        this.v[x] = kk;
     }
 
     Op_7(ins) {
-
+        let kk = ins & 0xff;
+        let x = (ins & 0xfff) >> 8;
+        this.v[x] = this.v[x] + kk;
     }
 
     Op_8(ins) {
+        let y = (0xff & ins) >> 4;
+        let x = (0xfff & ins) >> 8;
+        switch(ins & 0xf) {    
+            case 0x0:
+                this.v[x] = this.v[y];
+                break;
+            case 0x1:
+                this.v[x] = this.v[x] | this.v[y];
+                break;
+            case 0x2:
+                this.v[x] = this.v[x] & this.v[y];
+                break;
+            case 0x3:
+                this.v[x] = this.v[x] ^ this.v[y];
+                break;
+            case 0x4:
+                let sum = this.v[x] + this.v[y];
+                if (sum > 255) {
+                    sum = sum & 0xff;
+                    this.v[0xf] = 1;
+                }
+                this.v[x] = sum;
+                break;
+            case 0x5:
+                break;
+                
+
+        }
+
+        
 
     }
 
     Op_9(ins) {
-
+        return;
     }
 
     Op_a(ins) {
-
+        return;
     }
 
     Op_b(ins) {
-
+        return;
     }
 
     Op_c(ins) {
-
+        return;
     }
 
     Op_d(ins) {
-
+        return;
     }
 
     Op_e(ins) {
-
+        return;
     }
 
     Op_f(ins) {
-
+        return;
     }
 }
