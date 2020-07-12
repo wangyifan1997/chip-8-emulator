@@ -49,7 +49,8 @@ export default class C8 {
         this.delayTimer = 0;
         this.soundTimer = 0;
 
-        this.stop = true;
+        this.isWaiting = false;
+        this.targetReg = 0
         this.keyState = new Array[NUM_KEYS];
     }
 
@@ -68,6 +69,8 @@ export default class C8 {
 
 
     tick() {
+        if (this.isWaiting) return;
+
         let ins = ((this.ram[this.pc] & 0xFF) << 8) | (this.ram[this.pc + 1] & 0xFF);
         this.pc += 2;
 
@@ -249,44 +252,61 @@ export default class C8 {
     }
 
     Op_d(ins) {
-        // TODO
-        return;
+        const x = this.getSecondOpCode(ins);
+        const y = this.getThirdOpCode(ins);
+        const n = this.getFourthOpCode(ins);
     }
 
     Op_e(ins) {
-        // TODO
-        return;
+        const x = this.getSecondOpCode(ins);
+        if (this.keyState[this.v[x]]) {
+            this.pc += 2;
+        }
     }
 
     Op_f(ins) {
+        const x = this.getSecondOpCode(ins);
         switch(this.getLastTwoOpCode(ins)) {
             case 0x07:
-                // TODO
+                this.v[x] = this.delayTimer;
                 break;
             case 0x0A:
-                // TODO
+                this.isWaiting = true;
+                this.targetReg = x;
                 break;
             case 0x15:
-                const x = this.getSecondOpCode(ins);
                 this.delayTimer = this.v[x];
                 break;
             case 0x18:
-                const x = this.getSecondOpCode(ins);
                 this.soundTimer = this.v[y];
                 break;
             case 0x1E:
-                const x = this.getSecondOpCode(ins);
                 this.i += this.v[x];
                 break;
             case 0x29:
                 // TODO
                 break;
             case 0x33:
-                const x = this.getSecondOpCode(ins);
                 const vx = this.v[x];
-                const hundreds = vx / 100;
-                const tens = vx / 10 - hundreds * 10;
+                const hundreds = Math.floor(vx / 100);
+                const tens = Math.floor(vx / 10) - hundreds * 10;
                 const ones = vx - tens * 10 - hundreds * 100;
+                this.ram[this.i] = hundreds;
+                this.ram[this.i + 1] = tens;
+                this.ram[this.i + 2] = ones;
+                break;
+            case 0x55:
+                for (let k = 0; k <= x; k++) {
+                    this.ram[this.i + k] = v[k];
+                }
+                this.i += (x + 1);
+                break;
+            case 0x65:
+                for (let k = 0; k <= x; k++) {
+                    v[k] = this.ram[this.i + k];
+                }
+                this.i += (x + 1);
+                break;
         }
     }
 
