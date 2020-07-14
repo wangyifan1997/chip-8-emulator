@@ -1,4 +1,4 @@
-const TETRIS = 'a2b4 23e6 22b6 7001 d011 3025 1206 71ff\
+export const TETRIS = 'a2b4 23e6 22b6 7001 d011 3025 1206 71ff\
                 d011 601a d011 6025 3100 120e c470 4470\
                 121c c303 601e 6103 225c f515 d014 3f01\
                 123c d014 71ff d014 2340 121c e7a1 2272\
@@ -30,14 +30,76 @@ const TETRIS = 'a2b4 23e6 22b6 7001 d011 3025 1206 71ff\
                 dde5 7d05 f129 dde5 7d05 f229 dde5 a700\
                 f265 a2b4 00ee 6a00 6019 00ee 3723'
 
-const parseTextRom = function(textRom) {
+export const TEST_OPCODE = '124e eaac aaea ceaa aaae e0a0 a0e0 c040\
+                            40e0 e020 c0e0 e060 20e0 a0e0 2020 6040\
+                            2040 e080 e0e0 e020 2020 e0e0 a0e0 e0e0\
+                            20e0 40a0 e0a0 e0c0 80e0 e080 c080 a040\
+                            a0a0 a202 dab4 00ee a202 dab4 13dc 6801\
+                            6905 6a0a 6b01 652a 662b a216 d8b4 a23e\
+                            d9b4 a202 362b a206 dab4 6b06 a21a d8b4\
+                            a23e d9b4 a206 452a a202 dab4 6b0b a21e\
+                            d8b4 a23e d9b4 a206 5560 a202 dab4 6b10\
+                            a226 d8b4 a23e d9b4 a206 76ff 462a a202\
+                            dab4 6b15 a22e d8b4 a23e d9b4 a206 9560\
+                            a202 dab4 6b1a a232 d8b4 a23e d9b4 2242\
+                            6817 691b 6a20 6b01 a20a d8b4 a236 d9b4\
+                            a202 dab4 6b06 a22a d8b4 a20a d9b4 a206\
+                            8750 472a a202 dab4 6b0b a22a d8b4 a20e\
+                            d9b4 a206 672a 87b1 472b a202 dab4 6b10\
+                            a22a d8b4 a212 d9b4 a206 6678 671f 8762\
+                            4718 a202 dab4 6b15 a22a d8b4 a216 d9b4\
+                            a206 6678 671f 8763 4767 a202 dab4 6b1a\
+                            a22a d8b4 a21a d9b4 a206 668c 678c 8764\
+                            4718 a202 dab4 682c 6930 6a34 6b01 a22a\
+                            d8b4 a21e d9b4 a206 668c 6778 8765 47ec\
+                            a202 dab4 6b06 a22a d8b4 a222 d9b4 a206\
+                            66e0 866e 46c0 a202 dab4 6b0b a22a d8b4\
+                            a236 d9b4 a206 660f 8666 4607 a202 dab4\
+                            6b10 a23a d8b4 a21e d9b4 a3e8 6000 6130\
+                            f155 a3e9 f065 a206 4030 a202 dab4 6b15\
+                            a23a d8b4 a216 d9b4 a3e8 6689 f633 f265\
+                            a202 3001 a206 3103 a206 3207 a206 dab4\
+                            6b1a a20e d8b4 a23e d9b4 1248 13dc'
+
+export const CH_TEST = '00e0 6300 6401 65ee 35ee 1310 6300 6402\
+                        65ee 66ee 5560 1310 6300 6403 65ee 45fd\
+                        1310 6300 6404 65ee 7501 35ef 1310 6300\
+                        6405 6f01 65ee 66ef 8565 3f00 1310 6300\
+                        6406 6f00 65ef 66ee 8565 3f01 1310 6f00\
+                        6300 6407 65ee 66ef 8567 3f01 1310 6300\
+                        6408 6f01 65ef 66ee 8567 3f00 1310 6300\
+                        6409 65f0 660f 8561 35ff 1310 6301 6400\
+                        65f0 660f 8562 3500 1310 6301 6401 65f0\
+                        660f 8563 35ff 1310 6f00 6301 6402 6581\
+                        850e 3f01 1310 6301 6403 6f01 6547 850e\
+                        3f00 1310 6301 6404 6f00 6501 8506 3f01\
+                        1310 6301 6405 6f01 6502 8506 3f00 1310\
+                        6301 6406 6015 6178 a3d0 f155 f165 3015\
+                        1310 3178 1310 6301 6407 608a a3d0 f033\
+                        a3d0 f065 3001 1310 6001 f01e f065 3003\
+                        1310 6001 f01e f065 3008 1310 1332 130e\
+                        a32a 6013 6109 d018 f329 6022 610b d015\
+                        f429 6028 610b d015 130e fff0 f0ff f0f0\
+                        f0ff a358 6015 610b 6308 d018 7008 f31e\
+                        302d 133a a370 6002 6118 6308 d018 7005\
+                        f31e 303e 134c 130e f088 88f0 8888 88f0\
+                        7884 8484 8484 8478 84c4 a494 8c84 8484\
+                        c0a0 a0c0 a0a0 c000 0000 a0a0 e020 20e0\
+                        0000 0000 0000 0000 c0a0 a0c0 a0a0 c000\
+                        0000 60a0 c080 6000 0000 6080 4020 c000\
+                        8080 c080 8080 6000 e080 8080 8080 e000\
+                        0000 40a0 a0a0 4000 2020 2060 a0a0 6000\
+                        0000 60a0 c080 6000 0000 0060 4040 5000\
+                        0000 0000 0000'
+
+export const parseTextRom = function(textRom) {
     let textRomWithoutSpace = textRom.replace(/ +/g, '');
     let rom = Array(textRomWithoutSpace.length / 2);
     for (let i = 0; i < rom.length; i++) {
         rom[i] = parseInt(textRomWithoutSpace.substring(i * 2, i * 2 + 2), 16);
-        console.log(rom[i]);
+        // console.log(rom[i]);
     }
     return rom;
 }
 
-parseTextRom(TETRIS);
+// parseTextRom(TETRIS);

@@ -26,7 +26,7 @@ const fontROM = [
 
 export default class C8 {
     constructor(rom) {
-        this.ram = new Uint8Array[RAM_SIZE];
+        this.ram = new Uint8Array(RAM_SIZE);
 
         if (rom.length > C8_MAX_ROM) {
             throw new Error("rom size too big, should be under " + C8_MAX_ROM + " bytes");
@@ -45,92 +45,100 @@ export default class C8 {
         this.sp = 0;
         this.sb = 0xFA0; // bottom of the stack
         this.i = 0;
-        this.v = new Uint16Array[NUM_REGISTERS];
+        this.v = new Uint8Array(NUM_REGISTERS);
         this.delayTimer = 0;
         this.soundTimer = 0;
 
         this.isWaiting = false;
         this.targetReg = 0
-        this.keyState = new Array[NUM_KEYS];
+        this.keyState = new Array(NUM_KEYS);
+        console.log(this.ram);
     }
 
-    initScreen() {
+    initScreen = () => {
         this.screen = new Array(NUM_SCREEN_ROWS);
         for (let i = 0; i < NUM_SCREEN_ROWS; i++) {
             this.screen[i] = new Array(NUM_SCREEN_COLS).fill(0);
         }
     }
 
-    clearScreen() {
+    clearScreen = () => {
         for (let i = 0; i < NUM_SCREEN_ROWS; i++) {
             this.screen[i].fill(0);
         }
     }
 
+    getScreen = () => {
+        return this.screen;
+    };
 
-    tick() {
+    tick = () => {
         if (this.isWaiting) return;
+        // console.log("ram is", this.ram);
+        // console.log("pc is", this.pc);
 
         let ins = ((this.ram[this.pc] & 0xFF) << 8) | (this.ram[this.pc + 1] & 0xFF);
+        console.log(ins.toString(16));
+        
         this.pc += 2;
 
         switch (this.getFirstOpCode(ins)) {
             case 0x0:
-                Op_0(ins);
+                this.Op_0(ins);
                 break;
             case 0x1:
-                Op_1(ins);
+                this.Op_1(ins);
                 break;
             case 0x2:
-                Op_2(ins);
+                this.Op_2(ins);
                 break;
             case 0x3:
-                Op_3(ins);
+                this.Op_3(ins);
                 break;
             case 0x4:
-                Op_4(ins);
+                this.Op_4(ins);
                 break;
             case 0x5:
-                Op_5(ins);
+                this.Op_5(ins);
                 break;
             case 0x6:
-                Op_6(ins);
+                this.Op_6(ins);
                 break;
             case 0x7:
-                Op_7(ins);
+                this.Op_7(ins);
                 break;
             case 0x8:
-                Op_8(ins);
+                this.Op_8(ins);
                 break;
             case 0x9:
-                Op_9(ins);
+                this.Op_9(ins);
                 break;
             case 0xa:
-                Op_a(ins);
+                this.Op_a(ins);
                 break;
             case 0xb:
-                Op_b(ins);
+                this.Op_b(ins);
                 break;
             case 0xc:
-                Op_c(ins);
+                this.Op_c(ins);
                 break;
             case 0xd:
-                Op_d(ins);
+                this.Op_d(ins);
                 break;
             case 0xe:
-                Op_e(ins);
+                this.Op_e(ins);
                 break;
             case 0xf:
-                Op_f(ins);
+                this.Op_f(ins);
                 break;
             default:
                 throw new Error("unrecognised instruction: " + ins.toString(16));
         }
-    }
+    };
 
     
 
-    Op_0(ins) {
+    Op_0 = (ins) => {
         switch(ins) {
             case 0x00E0:
                 this.clearScreen();
@@ -145,30 +153,30 @@ export default class C8 {
         }
     }
 
-    Op_1(ins) {
+    Op_1 = (ins) => {
         this.pc = this.getLastThreeOpCode(ins); 
     }
 
-    Op_2(ins) {
+    Op_2 = (ins) => {
         this.sp += 2;
         this.ram[this.sp] = (this.pc & 0xFFFF) >> 8;
         this.ram[this.sp + 1] = this.pc & 0xFF;
         this.pc = this.getLastThreeOpCode(ins);
     }
 
-    Op_3(ins) {
+    Op_3 = (ins) => {
         if (this.v[this.getSecondOpCode(ins)] == this.getLastTwoOpCode(ins)) {
             this.pc += 2;
         }
     }
 
-    Op_4(ins) {
+    Op_4 = (ins) => {
         if (this.v[this.getSecondOpCode(ins)] != this.getLastTwoOpCode(ins)) {
             this.pc += 2;
         }
     }
 
-    Op_5(ins) {
+    Op_5 = (ins) => {
         const y = this.getThirdOpCode(ins);
         const x = this.getSecondOpCode(ins);
         if (this.v[x] == this.v[y]) {
@@ -176,19 +184,19 @@ export default class C8 {
         }
     }
 
-    Op_6(ins) {
+    Op_6 = (ins) => {
         const kk = this.getLastTwoOpCode(ins);
         const x = this.getSecondOpCode(ins);
         this.v[x] = kk;
     }
 
-    Op_7(ins) {
+    Op_7 = (ins) => {
         const kk = this.getLastTwoOpCode(ins);
         const x = this.getSecondOpCode(ins);
         this.v[x] += kk;
     }
 
-    Op_8(ins) {
+    Op_8 = (ins) => {
         const y = this.getThirdOpCode(ins);
         const x = this.getSecondOpCode(ins);
         switch(this.getFourthOpCode(ins)) {    
@@ -218,11 +226,11 @@ export default class C8 {
                 this.v[x] >>= 1;
                 break;
             case 0x7:
-                this.v[0xF] = this.v[y] > this.v[x] ? 1 : this.v[0xF];
+                this.v[0xF] = this.v[y] > this.v[x] ? 1 : 0;
                 this.v[x] = this.v[y] - this.v[x];
                 break;
             case 0xe:
-                this.v[0xF] = ((this.v[x] & 0x8000) >> 15) == 1 ? 1 : 0;
+                this.v[0xF] = ((this.v[x] >> 7) & 1) == 1 ? 1 : 0;
                 this.v[x] <<= 1;
                 break;
             default:
@@ -230,42 +238,57 @@ export default class C8 {
         }
     }
 
-    Op_9(ins) {
+    Op_9 = (ins) => {
         const y = this.getThirdOpCode(ins);
         const x = this.getSecondOpCode(ins);
         this.pc += (x != y) ? 2 : 0;
     }
 
-    Op_a(ins) {
+    Op_a = (ins) => {
         this.i = this.getLastThreeOpCode(ins);
     }
 
-    Op_b(ins) {
+    Op_b = (ins) => {
         this.pc = this.getLastThreeOpCode(ins) + this.v[0x0];
     }
 
-    Op_c(ins) {
+    Op_c = (ins) => {
         const x = this.getSecondOpCode(ins);
         const kk = this.getLastTwoOpCode(ins);
         const rand = Math.floor(Math.random() * Math.floor(256));
         this.v[x] = rand & kk;
     }
 
-    Op_d(ins) {
+    Op_d = (ins) => {
         const x = this.getSecondOpCode(ins);
         const y = this.getThirdOpCode(ins);
         const n = this.getFourthOpCode(ins);
+
+        for (let k = 0; k < n; k++) {
+            const byte = this.ram[this.i + k];
+            for (let offset = 0; offset < 8; offset++) {
+                const state = (byte >> offset) & 1;
+                const row = (y + k) % NUM_SCREEN_ROWS;
+                const col = (x + offset) % NUM_SCREEN_COLS;
+                const before = this.screen[row][col];
+                this.screen[row][col] ^= state;
+                if (before == 1 && this.screen[row][col] == 0) {
+                    this.v[0xF] = 1;
+                }
+            }
+        }
     }
 
-    Op_e(ins) {
+    Op_e = (ins) => {
         const x = this.getSecondOpCode(ins);
         if (this.keyState[this.v[x]]) {
             this.pc += 2;
         }
     }
 
-    Op_f(ins) {
+    Op_f = (ins) => {
         const x = this.getSecondOpCode(ins);
+        const y = this.getThirdOpCode(ins);
         switch(this.getLastTwoOpCode(ins)) {
             case 0x07:
                 this.v[x] = this.delayTimer;
@@ -284,7 +307,7 @@ export default class C8 {
                 this.i += this.v[x];
                 break;
             case 0x29:
-                // TODO
+                this.i = this.v[x] * 5; 
                 break;
             case 0x33:
                 const vx = this.v[x];
@@ -297,40 +320,40 @@ export default class C8 {
                 break;
             case 0x55:
                 for (let k = 0; k <= x; k++) {
-                    this.ram[this.i + k] = v[k];
+                    this.ram[this.i + k] = this.v[k];
                 }
                 this.i += (x + 1);
                 break;
             case 0x65:
                 for (let k = 0; k <= x; k++) {
-                    v[k] = this.ram[this.i + k];
+                    this.v[k] = this.ram[this.i + k];
                 }
                 this.i += (x + 1);
                 break;
         }
     }
 
-    getFirstOpCode(ins) {
+    getFirstOpCode = (ins) => {
         return (ins & 0xf000) >> 12;
     }
 
-    getSecondOpCode(ins) {
+    getSecondOpCode = (ins) => {
         return (ins & 0xf00) >> 8;
     }
 
-    getThirdOpCode(ins) {
+    getThirdOpCode = (ins) => {
         return (ins & 0xf0) >> 4;
     }
 
-    getFourthOpCode(ins) {
+    getFourthOpCode = (ins) => {
         return (ins & 0xf);
     }
 
-    getLastTwoOpCode(ins) {
+    getLastTwoOpCode = (ins) => {
         return (ins & 0xff);
     }
 
-    getLastThreeOpCode(ins) {
+    getLastThreeOpCode = (ins) => {
         return (ins & 0xfff);
     }
 }
