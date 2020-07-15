@@ -52,7 +52,6 @@ export default class C8 {
         this.isWaiting = false;
         this.targetReg = 0
         this.keyState = new Array(NUM_KEYS);
-        console.log(this.ram);
     }
 
     initScreen = () => {
@@ -76,9 +75,11 @@ export default class C8 {
         if (this.isWaiting) return;
         // console.log("ram is", this.ram);
         // console.log("pc is", this.pc);
-
+        
         let ins = ((this.ram[this.pc] & 0xFF) << 8) | (this.ram[this.pc + 1] & 0xFF);
         console.log(ins.toString(16));
+        console.log("v is ", this.v);
+        console.log("screen is ", this.screen);
         
         this.pc += 2;
 
@@ -268,13 +269,11 @@ export default class C8 {
             const byte = this.ram[this.i + k];
             for (let offset = 7; offset >= 0; offset--) {
                 const state = (byte >> offset) & 1;
-                const row = (y + k) % NUM_SCREEN_ROWS;
-                const col = (x + (7 - offset)) % NUM_SCREEN_COLS;
+                const row = (this.v[y] + k) % NUM_SCREEN_ROWS;
+                const col = (this.v[x] + (7 - offset)) % NUM_SCREEN_COLS;
                 const before = this.screen[row][col];
                 this.screen[row][col] ^= state;
-                if (before == 1 && this.screen[row][col] == 0) {
-                    this.v[0xF] = 1;
-                }
+                this.v[0xF] = (before == 1 && this.screen[row][col] == 0) ? 1 : 0;
             }
         }
     }

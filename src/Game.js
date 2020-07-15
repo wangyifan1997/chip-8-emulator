@@ -77,7 +77,7 @@ class Game extends React.Component {
                 }
             }
         }
-        console.log(cells);
+        // console.log(cells);
 
         return cells;
     }
