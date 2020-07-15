@@ -266,10 +266,10 @@ export default class C8 {
 
         for (let k = 0; k < n; k++) {
             const byte = this.ram[this.i + k];
-            for (let offset = 0; offset < 8; offset++) {
+            for (let offset = 7; offset >= 0; offset--) {
                 const state = (byte >> offset) & 1;
                 const row = (y + k) % NUM_SCREEN_ROWS;
-                const col = (x + offset) % NUM_SCREEN_COLS;
+                const col = (x + (7 - offset)) % NUM_SCREEN_COLS;
                 const before = this.screen[row][col];
                 this.screen[row][col] ^= state;
                 if (before == 1 && this.screen[row][col] == 0) {
@@ -322,13 +322,13 @@ export default class C8 {
                 for (let k = 0; k <= x; k++) {
                     this.ram[this.i + k] = this.v[k];
                 }
-                this.i += (x + 1);
+                // this.i += (x + 1);
                 break;
             case 0x65:
                 for (let k = 0; k <= x; k++) {
                     this.v[k] = this.ram[this.i + k];
                 }
-                this.i += (x + 1);
+                // this.i += (x + 1);
                 break;
         }
     }
