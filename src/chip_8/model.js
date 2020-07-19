@@ -78,14 +78,13 @@ export default class C8 {
         }
 
         this.pc = 0x200;
-        this.sp = 0;
-        this.sb = 0xFA0; // bottom of the stack
+        this.sp = 0xFA0; // bottom of the stack
         this.i = 0;
         this.v = new Uint8Array(NUM_REGISTERS);
         this.delayTimer = 0;
         this.soundTimer = 0;
 
-        this.draw = () => {};
+        this.draw = () => { };
         this.isWaiting = false;
         this.targetReg = 0;
         this.keyState = new Array(NUM_KEYS).fill(false);
@@ -93,7 +92,7 @@ export default class C8 {
 
     setDraw = (drawFunc) => {
         this.draw = drawFunc;
-    } 
+    }
 
     clearScreen = () => {
         for (let i = 0; i < NUM_SCREEN_ROWS; i++) {
@@ -283,6 +282,7 @@ export default class C8 {
     }
 
     Op_c = (ins) => {
+        // console.log(ins.toString(16));
         const x = this.getSecondOpCode(ins);
         const kk = this.getLastTwoOpCode(ins);
         const rand = Math.floor(Math.random() * Math.floor(256));
@@ -294,17 +294,28 @@ export default class C8 {
         const y = this.getThirdOpCode(ins);
         const n = this.getFourthOpCode(ins);
 
+        this.v[0xF] = 0;
+
         for (let k = 0; k < n; k++) {
             const byte = this.ram[this.i + k];
             for (let offset = 7; offset >= 0; offset--) {
                 const state = (byte >> offset) & 1;
+                if (!state) continue;
                 const row = (this.v[y] + k) % NUM_SCREEN_ROWS;
                 const col = (this.v[x] + (7 - offset)) % NUM_SCREEN_COLS;
-                const before = this.screen[row][col];
-                this.screen[row][col] ^= state;
-                this.v[0xF] = ((before && !this.screen[row][col]) ? 1 : 0);
+                if (this.screen[row][col]) {
+
+                    this.v[0xF] = 1;
+                    console.log("collision");
+                    // console.log(ins.toString(16));
+                }
+
+                // const before = this.screen[row][col];
+                this.screen[row][col] ^= 1;
+
             }
         }
+
 
         this.draw();
     }
