@@ -28,8 +28,6 @@ const fontROM = [
     0xF0, 0x80, 0xF0, 0x80, 0x80,
 ]
 
-
-
 export default class C8 {
     constructor(rom) {
         if (rom.length > C8_MAX_ROM) {
@@ -68,7 +66,7 @@ export default class C8 {
         this.draw = drawFunc;
     }
 
-    clearScreen = () => {
+    _clearScreen = () => {
         for (let i = 0; i < NUM_SCREEN_ROWS; i++) {
             this.screen[i].fill(0);
         }
@@ -87,52 +85,52 @@ export default class C8 {
 
         switch (this._getFirstOpCode(ins)) {
             case 0x0:
-                this.Op_0(ins);
+                this._Op_0(ins);
                 break;
             case 0x1:
-                this.Op_1(ins);
+                this._Op_1(ins);
                 break;
             case 0x2:
-                this.Op_2(ins);
+                this._Op_2(ins);
                 break;
             case 0x3:
-                this.Op_3(ins);
+                this._Op_3(ins);
                 break;
             case 0x4:
-                this.Op_4(ins);
+                this._Op_4(ins);
                 break;
             case 0x5:
-                this.Op_5(ins);
+                this._Op_5(ins);
                 break;
             case 0x6:
-                this.Op_6(ins);
+                this._Op_6(ins);
                 break;
             case 0x7:
-                this.Op_7(ins);
+                this._Op_7(ins);
                 break;
             case 0x8:
-                this.Op_8(ins);
+                this._Op_8(ins);
                 break;
             case 0x9:
-                this.Op_9(ins);
+                this._Op_9(ins);
                 break;
             case 0xa:
-                this.Op_a(ins);
+                this._Op_a(ins);
                 break;
             case 0xb:
-                this.Op_b(ins);
+                this._Op_b(ins);
                 break;
             case 0xc:
-                this.Op_c(ins);
+                this._Op_c(ins);
                 break;
             case 0xd:
-                this.Op_d(ins);
+                this._Op_d(ins);
                 break;
             case 0xe:
-                this.Op_e(ins);
+                this._Op_e(ins);
                 break;
             case 0xf:
-                this.Op_f(ins);
+                this._Op_f(ins);
                 break;
             default:
                 throw new Error("unrecognised instruction: " + ins.toString(16));
@@ -141,10 +139,10 @@ export default class C8 {
 
 
 
-    Op_0 = (ins) => {
+    _Op_0 = (ins) => {
         switch (ins) {
             case 0x00E0:
-                this.clearScreen();
+                this._clearScreen();
                 break;
             case 0x00EE:
                 this.pc = (this.ram[this.sp] << 8) | (this.ram[this.sp + 1]);
@@ -156,30 +154,30 @@ export default class C8 {
         }
     }
 
-    Op_1 = (ins) => {
+    _Op_1 = (ins) => {
         this.pc = this._getLastThreeOpCode(ins);
     }
 
-    Op_2 = (ins) => {
+    _Op_2 = (ins) => {
         this.sp += 2;
         this.ram[this.sp] = (this.pc & 0xFFFF) >> 8;
         this.ram[this.sp + 1] = this.pc & 0xFF;
         this.pc = this._getLastThreeOpCode(ins);
     }
 
-    Op_3 = (ins) => {
+    _Op_3 = (ins) => {
         if (this.v[this._getSecondOpCode(ins)] === this._getLastTwoOpCode(ins)) {
             this.pc += 2;
         }
     }
 
-    Op_4 = (ins) => {
+    _Op_4 = (ins) => {
         if (this.v[this._getSecondOpCode(ins)] !== this._getLastTwoOpCode(ins)) {
             this.pc += 2;
         }
     }
 
-    Op_5 = (ins) => {
+    _Op_5 = (ins) => {
         const y = this._getThirdOpCode(ins);
         const x = this._getSecondOpCode(ins);
         if (this.v[x] === this.v[y]) {
@@ -187,19 +185,19 @@ export default class C8 {
         }
     }
 
-    Op_6 = (ins) => {
+    _Op_6 = (ins) => {
         const kk = this._getLastTwoOpCode(ins);
         const x = this._getSecondOpCode(ins);
         this.v[x] = kk;
     }
 
-    Op_7 = (ins) => {
+    _Op_7 = (ins) => {
         const kk = this._getLastTwoOpCode(ins);
         const x = this._getSecondOpCode(ins);
         this.v[x] += kk;
     }
 
-    Op_8 = (ins) => {
+    _Op_8 = (ins) => {
         const y = this._getThirdOpCode(ins);
         const x = this._getSecondOpCode(ins);
         switch (this._getFourthOpCode(ins)) {
@@ -243,28 +241,28 @@ export default class C8 {
         }
     }
 
-    Op_9 = (ins) => {
+    _Op_9 = (ins) => {
         const y = this._getThirdOpCode(ins);
         const x = this._getSecondOpCode(ins);
         this.pc += (this.v[x] !== this.v[y]) ? 2 : 0;
     }
 
-    Op_a = (ins) => {
+    _Op_a = (ins) => {
         this.i = this._getLastThreeOpCode(ins);
     }
 
-    Op_b = (ins) => {
+    _Op_b = (ins) => {
         this.pc = this._getLastThreeOpCode(ins) + this.v[0x0];
     }
 
-    Op_c = (ins) => {
+    _Op_c = (ins) => {
         const x = this._getSecondOpCode(ins);
         const kk = this._getLastTwoOpCode(ins);
         const rand = Math.floor(Math.random() * Math.floor(256));
         this.v[x] = rand & kk;
     }
 
-    Op_d = (ins) => {
+    _Op_d = (ins) => {
         const x = this._getSecondOpCode(ins);
         const y = this._getThirdOpCode(ins);
         const n = this._getFourthOpCode(ins);
@@ -289,7 +287,7 @@ export default class C8 {
         this.draw();
     }
 
-    Op_e = (ins) => {
+    _Op_e = (ins) => {
         const x = this._getSecondOpCode(ins);
         switch (this._getLastTwoOpCode(ins)) {
             case 0x9E:
@@ -303,7 +301,7 @@ export default class C8 {
         }
     }
 
-    Op_f = (ins) => {
+    _Op_f = (ins) => {
         const x = this._getSecondOpCode(ins);
         switch (this._getLastTwoOpCode(ins)) {
             case 0x07:
