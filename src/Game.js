@@ -1,6 +1,6 @@
 import React from 'react';
 import C8 from './chip_8/model';
-import { parseTextRom, CH_TEST } from './rom/rom';
+import { parseTextRom, CH_TEST, TETRIS, TEST_OPCODE } from './rom/rom';
 import './Game.css';
 
 const CELL_SIZE = 20;
@@ -29,22 +29,35 @@ class Game extends React.Component {
         this.rows = HEIGHT / CELL_SIZE;
         this.cols = WIDTH / CELL_SIZE;
 
-        // this.board = this.makeEmptyBoard();
-
-        this.rom = parseTextRom(CH_TEST);
+        this.rom = parseTextRom(TETRIS);
         this.chip8 = new C8(this.rom);
+        this.chip8.setDraw(this.updateScreen);
 
         this.state = {
             cells: [],
             isRunning: false,
-            interval: 300,
-            frequency: 1,
+            interval: 1000 / 60,
+            frequency: 10,
         }
 
         this.intervalHandler = setInterval(this.tick, this.state.interval);
     }
 
+    handleKeyDown = (event) => {
+        // console.log(event.key, event.keyCode);
+        this.chip8.keyDown(event.key);
+    }
+
+    handleKeyUp = (event) => {
+        // console.log(event.key, event.keyCode);
+        this.chip8.keyUp(event.key);
+    }
+
     componentDidMount = () => {
+        // Anti-pattern? How to avoid direct DOM manipulation?
+        document.body.onkeydown = (e) => this.handleKeyDown(e);
+        document.body.onkeyup = (e) => this.handleKeyUp(e);
+
         this.setState({
             isRunning: true,
         });
@@ -61,15 +74,19 @@ class Game extends React.Component {
                 this.chip8.tick();
                 numCycleLeft--;
             }
-            const cells = this.makeCells(this.chip8.getScreen());
-            this.setState({
-                cells
-            });
-        } 
+            this.chip8.decreaseDelayTimer();
+            this.chip8.decreaseSoundTimer();
+        }
+    }
+
+    updateScreen = () => {
+        const cells = this.makeCells(this.chip8.getScreen());
+        this.setState({ cells });
     }
 
     makeCells = (screen) => {
         let cells = [];
+
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.cols; x++) {
                 if (screen[y][x]) {
@@ -77,21 +94,20 @@ class Game extends React.Component {
                 }
             }
         }
-        // console.log(cells);
 
         return cells;
     }
 
     render() {
-        const { cells, interval, isRunning } = this.state;
+        const { cells } = this.state;
         return (
-            <div>
+            <div onKeyDown={(e) => this.handleKeyDown(e)} onKeyUp={(e) => this.handleKeyUp(e)}>
                 <div className="Board"
-                    style={{ width: WIDTH, height: HEIGHT, backgroundSize: `${CELL_SIZE}px ${CELL_SIZE}px`}}
+                    style={{ width: WIDTH, height: HEIGHT, backgroundSize: `${CELL_SIZE}px ${CELL_SIZE}px` }}
                     ref={(n) => { this.boardRef = n; }}>
 
                     {cells.map(cell => (
-                        <Cell x={cell.x} y={cell.y} key={`${cell.x},${cell.y}`}/>
+                        <Cell x={cell.x} y={cell.y} key={`${cell.x},${cell.y}`} />
                     ))}
                 </div>
             </div>

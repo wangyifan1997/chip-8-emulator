@@ -24,13 +24,45 @@ const fontROM = [
     0xF0, 0x80, 0xF0, 0x80, 0x80,
 ]
 
+// map key to indices of keyState array
+const keyMap = {
+    "1": 0x1,
+    "2": 0x2,
+    "3": 0x3,
+    "4": 0xC,
+    "q": 0x4,
+    "Q": 0x4,
+    "w": 0x5,
+    "W": 0x5,
+    "e": 0x6,
+    "E": 0x6,
+    "r": 0xD,
+    "R": 0xD,
+    "a": 0x7,
+    "A": 0x7,
+    "s": 0x8,
+    "S": 0x8,
+    "d": 0x9,
+    "D": 0x9,
+    "f": 0xE,
+    "F": 0xE,
+    "z": 0xA,
+    "Z": 0xA,
+    "x": 0x0,
+    "X": 0x0,
+    "c": 0xB,
+    "C": 0xB,
+    "v": 0xF,
+    "V": 0xF,
+}
+
 export default class C8 {
     constructor(rom) {
-        this.ram = new Uint8Array(RAM_SIZE);
-
         if (rom.length > C8_MAX_ROM) {
             throw new Error("rom size too big, should be under " + C8_MAX_ROM + " bytes");
         }
+
+        this.ram = new Uint8Array(RAM_SIZE);
 
         for (let i = 0; i < rom.length; i++) {
             this.ram[i + 0x200] = rom[i];
@@ -40,7 +72,11 @@ export default class C8 {
             this.ram[i] = fontROM[i];
         }
 
-        this.initScreen();
+        this.screen = new Array(NUM_SCREEN_ROWS);
+        for (let i = 0; i < NUM_SCREEN_ROWS; i++) {
+            this.screen[i] = new Array(NUM_SCREEN_COLS).fill(0);
+        }
+
         this.pc = 0x200;
         this.sp = 0;
         this.sb = 0xFA0; // bottom of the stack
@@ -49,17 +85,15 @@ export default class C8 {
         this.delayTimer = 0;
         this.soundTimer = 0;
 
+        this.draw = () => {};
         this.isWaiting = false;
-        this.targetReg = 0
-        this.keyState = new Array(NUM_KEYS);
+        this.targetReg = 0;
+        this.keyState = new Array(NUM_KEYS).fill(false);
     }
 
-    initScreen = () => {
-        this.screen = new Array(NUM_SCREEN_ROWS);
-        for (let i = 0; i < NUM_SCREEN_ROWS; i++) {
-            this.screen[i] = new Array(NUM_SCREEN_COLS).fill(0);
-        }
-    }
+    setDraw = (drawFunc) => {
+        this.draw = drawFunc;
+    } 
 
     clearScreen = () => {
         for (let i = 0; i < NUM_SCREEN_ROWS; i++) {
@@ -73,14 +107,9 @@ export default class C8 {
 
     tick = () => {
         if (this.isWaiting) return;
-        // console.log("ram is", this.ram);
-        // console.log("pc is", this.pc);
-        
+
         let ins = ((this.ram[this.pc] & 0xFF) << 8) | (this.ram[this.pc + 1] & 0xFF);
-        console.log(ins.toString(16));
-        console.log("v is ", this.v);
-        console.log("screen is ", this.screen);
-        
+
         this.pc += 2;
 
         switch (this.getFirstOpCode(ins)) {
@@ -137,10 +166,10 @@ export default class C8 {
         }
     };
 
-    
+
 
     Op_0 = (ins) => {
-        switch(ins) {
+        switch (ins) {
             case 0x00E0:
                 this.clearScreen();
                 break;
@@ -155,7 +184,7 @@ export default class C8 {
     }
 
     Op_1 = (ins) => {
-        this.pc = this.getLastThreeOpCode(ins); 
+        this.pc = this.getLastThreeOpCode(ins);
     }
 
     Op_2 = (ins) => {
@@ -166,13 +195,13 @@ export default class C8 {
     }
 
     Op_3 = (ins) => {
-        if (this.v[this.getSecondOpCode(ins)] == this.getLastTwoOpCode(ins)) {
+        if (this.v[this.getSecondOpCode(ins)] === this.getLastTwoOpCode(ins)) {
             this.pc += 2;
         }
     }
 
     Op_4 = (ins) => {
-        if (this.v[this.getSecondOpCode(ins)] != this.getLastTwoOpCode(ins)) {
+        if (this.v[this.getSecondOpCode(ins)] !== this.getLastTwoOpCode(ins)) {
             this.pc += 2;
         }
     }
@@ -180,7 +209,7 @@ export default class C8 {
     Op_5 = (ins) => {
         const y = this.getThirdOpCode(ins);
         const x = this.getSecondOpCode(ins);
-        if (this.v[x] == this.v[y]) {
+        if (this.v[x] === this.v[y]) {
             this.pc += 2;
         }
     }
@@ -200,7 +229,7 @@ export default class C8 {
     Op_8 = (ins) => {
         const y = this.getThirdOpCode(ins);
         const x = this.getSecondOpCode(ins);
-        switch(this.getFourthOpCode(ins)) {    
+        switch (this.getFourthOpCode(ins)) {
             case 0x0:
                 this.v[x] = this.v[y];
                 break;
@@ -223,15 +252,15 @@ export default class C8 {
                 this.v[x] -= this.v[y];
                 break;
             case 0x6:
-                this.v[0xF] = (this.v[x] & 1) == 1 ? 1 : 0;
-                this.v[x] >>= 1;
+                this.v[0xF] = (this.v[x] & 1) === 1 ? 1 : 0;
+                this.v[x] >>>= 1;
                 break;
             case 0x7:
                 this.v[0xF] = this.v[y] > this.v[x] ? 1 : 0;
                 this.v[x] = this.v[y] - this.v[x];
                 break;
             case 0xe:
-                this.v[0xF] = ((this.v[x] >> 7) & 1) == 1 ? 1 : 0;
+                this.v[0xF] = ((this.v[x] >> 7) & 1) === 1 ? 1 : 0;
                 this.v[x] <<= 1;
                 break;
             default:
@@ -242,7 +271,7 @@ export default class C8 {
     Op_9 = (ins) => {
         const y = this.getThirdOpCode(ins);
         const x = this.getSecondOpCode(ins);
-        this.pc += (x != y) ? 2 : 0;
+        this.pc += (x !== y) ? 2 : 0;
     }
 
     Op_a = (ins) => {
@@ -273,22 +302,30 @@ export default class C8 {
                 const col = (this.v[x] + (7 - offset)) % NUM_SCREEN_COLS;
                 const before = this.screen[row][col];
                 this.screen[row][col] ^= state;
-                this.v[0xF] = (before == 1 && this.screen[row][col] == 0) ? 1 : 0;
+                this.v[0xF] = ((before && !this.screen[row][col]) ? 1 : 0);
             }
         }
+
+        this.draw();
     }
 
     Op_e = (ins) => {
         const x = this.getSecondOpCode(ins);
-        if (this.keyState[this.v[x]]) {
-            this.pc += 2;
+        switch (this.getLastTwoOpCode(ins)) {
+            case 0x9E:
+                this.pc += this.keyState[this.v[x]] ? 2 : 0;
+                break;
+            case 0xA1:
+                this.pc += !this.keyState[this.v[x]] ? 2 : 0;
+                break;
+            default:
+                throw new Error("Illegal operation: " + ins.toString(16));
         }
     }
 
     Op_f = (ins) => {
         const x = this.getSecondOpCode(ins);
-        const y = this.getThirdOpCode(ins);
-        switch(this.getLastTwoOpCode(ins)) {
+        switch (this.getLastTwoOpCode(ins)) {
             case 0x07:
                 this.v[x] = this.delayTimer;
                 break;
@@ -300,13 +337,13 @@ export default class C8 {
                 this.delayTimer = this.v[x];
                 break;
             case 0x18:
-                this.soundTimer = this.v[y];
+                this.soundTimer = this.v[x];
                 break;
             case 0x1E:
                 this.i += this.v[x];
                 break;
             case 0x29:
-                this.i = this.v[x] * 5; 
+                this.i = this.v[x] * 5;
                 break;
             case 0x33:
                 const vx = this.v[x];
@@ -321,14 +358,41 @@ export default class C8 {
                 for (let k = 0; k <= x; k++) {
                     this.ram[this.i + k] = this.v[k];
                 }
-                // this.i += (x + 1);
                 break;
             case 0x65:
                 for (let k = 0; k <= x; k++) {
                     this.v[k] = this.ram[this.i + k];
                 }
-                // this.i += (x + 1);
                 break;
+            default:
+                throw new Error("Illegal operation: " + ins.toString(16));
+        }
+    }
+
+    keyUp = (key) => {
+        const keyPressed = keyMap[key];
+        this.keyState[keyPressed] = false;
+    }
+
+
+    keyDown = (key) => {
+        const keyPressed = keyMap[key];
+        if (this.isWaiting) {
+            this.v[this.targetReg] = keyPressed;
+            this.isWaiting = false;
+        }
+        this.keyState[keyPressed] = true;
+    }
+
+    decreaseDelayTimer = () => {
+        if (this.delayTimer > 0) {
+            this.delayTimer--;
+        }
+    }
+
+    decreaseSoundTimer = () => {
+        if (this.soundTimer > 0) {
+            this.soundTimer--;
         }
     }
 
