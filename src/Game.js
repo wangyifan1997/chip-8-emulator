@@ -1,6 +1,7 @@
 import React from 'react';
 import C8 from './chip_8/model';
-import { parseTextRom, CH_TEST, TETRIS, TEST_OPCODE, PONG } from './rom/rom';
+import { parseTextRom } from './chip_8/util';
+import { ROM } from './rom/rom';
 import './Game.css';
 
 const CELL_SIZE = 20;
@@ -29,7 +30,7 @@ class Game extends React.Component {
         this.rows = HEIGHT / CELL_SIZE;
         this.cols = WIDTH / CELL_SIZE;
 
-        this.rom = parseTextRom(PONG);
+        this.rom = parseTextRom(ROM.TETRIS);
         this.chip8 = new C8(this.rom);
         this.chip8.setDraw(this.updateScreen);
 
@@ -44,12 +45,10 @@ class Game extends React.Component {
     }
 
     handleKeyDown = (event) => {
-        // console.log(event.key, event.keyCode);
         this.chip8.keyDown(event.key);
     }
 
     handleKeyUp = (event) => {
-        // console.log(event.key, event.keyCode);
         this.chip8.keyUp(event.key);
     }
 

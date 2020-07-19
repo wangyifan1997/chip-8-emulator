@@ -1,4 +1,4 @@
-export const TETRIS = 'a2b4 23e6 22b6 7001 d011 3025 1206 71ff\
+const TETRIS = 'a2b4 23e6 22b6 7001 d011 3025 1206 71ff\
                 d011 601a d011 6025 3100 120e c470 4470\
                 121c c303 601e 6103 225c f515 d014 3f01\
                 123c d014 71ff d014 2340 121c e7a1 2272\
@@ -30,7 +30,7 @@ export const TETRIS = 'a2b4 23e6 22b6 7001 d011 3025 1206 71ff\
                 dde5 7d05 f129 dde5 7d05 f229 dde5 a700\
                 f265 a2b4 00ee 6a00 6019 00ee 3723'
 
-export const TEST_OPCODE = '124e eaac aaea ceaa aaae e0a0 a0e0 c040\
+const TEST_OPCODE = '124e eaac aaea ceaa aaae e0a0 a0e0 c040\
                             40e0 e020 c0e0 e060 20e0 a0e0 2020 6040\
                             2040 e080 e0e0 e020 2020 e0e0 a0e0 e0e0\
                             20e0 40a0 e0a0 e0c0 80e0 e080 c080 a040\
@@ -61,7 +61,7 @@ export const TEST_OPCODE = '124e eaac aaea ceaa aaae e0a0 a0e0 c040\
                             a202 3001 a206 3103 a206 3207 a206 dab4\
                             6b1a a20e d8b4 a23e d9b4 1248 13dc'
 
-export const CH_TEST = '00e0 6300 6401 65ee 35ee 1310 6300 6402\
+const CH_TEST = '00e0 6300 6401 65ee 35ee 1310 6300 6402\
                         65ee 66ee 5560 1310 6300 6403 65ee 45fd\
                         1310 6300 6404 65ee 7501 35ef 1310 6300\
                         6405 6f01 65ee 66ef 8565 3f00 1310 6300\
@@ -92,7 +92,7 @@ export const CH_TEST = '00e0 6300 6401 65ee 35ee 1310 6300 6402\
                         0000 60a0 c080 6000 0000 0060 4040 5000\
                         0000 0000 0000'
 
-export const PONG = '22fc 6b0c 6c3f 6d0c a2ea dab6 dcd6 6e00\
+const PONG ='22fc 6b0c 6c3f 6d0c a2ea dab6 dcd6 6e00\
                     22d4 6603 6802 6060 f015 f007 3000 121a\
                     c717 7708 69ff a2f0 d671 a2ea dab6 dcd6\
                     6001 e0a1 7bfe 6004 e0a1 7b02 601f 8b02\
@@ -112,14 +112,106 @@ export const PONG = '22fc 6b0c 6c3f 6d0c a2ea dab6 dcd6 6e00\
                     a2fa dab1 dac1 7a08 3a40 1312 a2f6 6a00\
                     6b20 dba1 00ee' 
 
-export const parseTextRom = function(textRom) {
-    let textRomWithoutSpace = textRom.replace(/ +/g, '');
-    let rom = Array(textRomWithoutSpace.length / 2);
-    for (let i = 0; i < rom.length; i++) {
-        rom[i] = parseInt(textRomWithoutSpace.substring(i * 2, i * 2 + 2), 16);
-        // console.log(rom[i]);
-    }
-    return rom;
-}
+const SPACE_INVADER =   '1225 5350 4143 4520 494e 5641 4445 5253\
+                                2030 2e39 3120 4279 2044 6176 6964 2057\
+                                494e 5445 5260 0061 0062 08a3 ddd0 1871\
+                                08f2 1e31 2012 2d70 0861 0030 4012 2d69\
+                                056c 156e 0023 9160 0af0 15f0 0730 0012\
+                                4b23 917e 0112 4566 0068 1c69 006a 046b\
+                                0a6c 046d 3c6e 0f00 e023 7523 51fd 1560\
+                                04e0 9e12 7d23 7538 0078 ff23 7560 06e0\
+                                9e12 8b23 7538 3978 0123 7536 0012 9f60\
+                                05e0 9e12 e966 0165 1b84 80a3 d9d4 51a3\
+                                d9d4 5175 ff35 ff12 ad66 0012 e9d4 513f\
+                                0112 e9d4 5166 0083 4073 0383 b562 f883\
+                                2262 0833 0012 c923 7d82 0643 0812 d333\
+                                1012 d523 7d82 0633 1812 dd23 7d82 0643\
+                                2012 e733 2812 e923 7d3e 0013 0779 0649\
+                                1869 006a 046b 0a6c 047d f46e 0f00 e023\
+                                5123 75fd 1512 6ff7 0737 0012 6ffd 1523\
+                                518b a43b 1213 1b7c 026a fc3b 0213 237c\
+                                026a 0423 513c 1812 6f00 e0a4 dd60 1461\
+                                0862 0fd0 1f70 08f2 1e30 2c13 3360 fff0\
+                                15f0 0730 0013 41f0 0a00 e0a7 06fe 6512\
+                                25a3 c1f9 1e61 0823 6981 0623 6981 0623\
+                                6981 0623 697b d000 ee80 e080 1230 00db\
+                                c67b 0c00 eea3 d960 1cd8 0400 ee23 518e\
+                                2323 5160 05f0 18f0 15f0 0730 0013 8900\
+                                ee6a 008d e06b 04e9 a112 57a6 0cfd 1ef0\
+                                6530 ff13 af6a 006b 046d 016e 0113 97a5\
+                                0af0 1edb c67b 087d 017a 013a 0713 9700\
+                                ee3c 7eff ff99 997e ffff 2424 e77e ff3c\
+                                3c7e db81 423c 7eff db10 387c fe00 007f\
+                                003f 007f 0000 0001 0101 0303 0303 0000\
+                                3f20 2020 2020 2020 203f 0808 ff00 00fe\
+                                00fc 00fe 0000 007e 4242 6262 6262 0000\
+                                ff00 0000 0000 0000 00ff 0000 ff00 7d00\
+                                417d 057d 7d00 00c2 c2c6 446c 2838 0000\
+                                ff00 0000 0000 0000 00ff 0000 ff00 f710\
+                                14f7 f704 0400 007c 44fe c2c2 c2c2 0000\
+                                ff00 0000 0000 0000 00ff 0000 ff00 ef20\
+                                28e8 e82f 2f00 00f9 85c5 c5c5 c5f9 0000\
+                                ff00 0000 0000 0000 00ff 0000 ff00 be00\
+                                2030 20be be00 00f7 04e7 8585 84f4 0000\
+                                ff00 0000 0000 0000 00ff 0000 ff00 007f\
+                                003f 007f 0000 00ef 28ef 00e0 606f 0000\
+                                ff00 0000 0000 0000 00ff 0000 ff00 00fe\
+                                00fc 00fe 0000 00c0 00c0 c0c0 c0c0 0000\
+                                fc04 0404 0404 0404 04fc 1010 fff9 81b9\
+                                8b9a 9afa 00fa 8a9a 9a9b 99f8 e625 25f4\
+                                3434 3400 1714 3437 3626 c7df 5050 5cd8\
+                                d8df 00df 111f 121b 19d9 7c44 fe86 8686\
+                                fc84 fe82 82fe fe80 c0c0 c0fe fc82 c2c2\
+                                c2fc fe80 f8c0 c0fe fe80 f0c0 c0c0 fe80\
+                                be86 86fe 8686 fe86 8686 1010 1010 1010\
+                                1818 1848 4878 9c90 b0c0 b09c 8080 c0c0\
+                                c0fe ee92 9286 8686 fe82 8686 8686 7c82\
+                                8686 867c fe82 fec0 c0c0 7c82 c2ca c47a\
+                                fe86 fe90 9c84 fec0 fe02 02fe fe10 3030\
+                                3030 8282 c2c2 c2fe 8282 82ee 3810 8686\
+                                9692 92ee 8244 3838 4482 8282 fe30 3030\
+                                fe02 1ef0 80fe 0000 0000 0606 0000 0060\
+                                60c0 0000 0000 0000 1818 1818 0018 7cc6\
+                                0c18 0018 0000 fefe 0000 fe82 8686 86fe\
+                                0808 0818 1818 fe02 fec0 c0fe fe02 1e06\
+                                06fe 84c4 c4fe 0404 fe80 fe06 06fe c0c0\
+                                c0fe 82fe fe02 0206 0606 7c44 fe86 86fe\
+                                fe82 fe06 0606 44fe 4444 fe44 a8a8 a8a8\
+                                a8a8 a86c 5a00 0c18 a830 4e7e 0012 1866\
+                                6ca8 5a66 5424 6600 4848 1812 a806 90a8\
+                                1200 7e30 12a8 8430 4e72 1866 a8a8 a8a8\
+                                a8a8 9054 78a8 4878 6c72 a812 186c 7266\
+                                5490 a872 2a18 a830 4e7e 0012 1866 6ca8\
+                                7254 a85a 6618 7e18 4e72 a872 2a18 3066\
+                                a830 4e7e 006c 3054 4e9c a8a8 a8a8 a8a8\
+                                a848 547e 18a8 9054 7866 a86c 2a30 5aa8\
+                                8430 722a a8d8 a800 4e12 a8e4 a2a8 004e\
+                                12a8 6c2a 5454 72a8 8430 722a a8de 9ca8\
+                                722a 18a8 0c54 485a 7872 1866 a866 185a\
+                                5466 726c a872 2a00 72a8 722a 18a8 304e\
+                                7e00 1218 666c a800 6618 a830 4e0c 6618\
+                                006c 304e 24a8 722a 1830 66a8 1e54 660c\
+                                189c a824 5454 12a8 4278 0c3c a8ae a8a8\
+                                a8a8 a8a8 a8ff 0000 0000 0000 0000 0000\
+                                0000 0000 00'
 
-// parseTextRom(TETRIS);
+const SUM_FUN = '00e0 6a00 2262 6380 228a 6514 c003 c103\
+                        c203 6400 8404 8414 8424 225a 12a4 6390\
+                        2282 e4a1 122c 3600 76ff 121e 2294 6310\
+                        2282 229a 6380 228a 00e0 8a64 2262 75ff\
+                        4500 124a 6360 228a 120c 6412 f418 631a\
+                        228a 74fe 3400 124c 1258 6810 6913 2270\
+                        00ee 6830 6900 a2b0 fa33 f265 2270 00ee\
+                        f029 d895 7806 f129 d895 7806 f229 d895\
+                        00ee 73ff 3300 1282 00ee f315 f307 3300\
+                        128c 00ee 6302 f318 00ee 6816 690a f429\
+                        d895 00ee 660a 6380 2282 e4a1 122c 121e'
+
+export const ROM = {
+    TETRIS,
+    TEST_OPCODE,
+    CH_TEST,
+    PONG,
+    SPACE_INVADER,
+    SUM_FUN,
+}
